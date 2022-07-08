@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -26,8 +27,25 @@ public class GameManager : MonoBehaviour
         enemies = new List<Enemy>();
 
         boardScript = GetComponent<BoardManager>();
+    }
+
+    private void onGameFinishedLoading(Scene scene, LoadSceneMode mode)
+    {
+        level++;
+
+        Debug.Log("Scene loaded. Level started: " + level);
 
         InitGame();
+    }
+
+    private void OnEnable()
+    {
+        SceneManager.sceneLoaded += onGameFinishedLoading;
+    }
+
+    private void OnDisable()
+    {
+        SceneManager.sceneLoaded -= onGameFinishedLoading;
     }
 
     private void Update()

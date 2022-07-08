@@ -41,7 +41,10 @@ public class Player : MovingObject
             vertical = 0;
 
         if (horizontal != 0 || vertical != 0)
+        {
+            Debug.Log("Attemp to move ith H=" + horizontal + " V=" + vertical);
             AttempMove<Wall>(horizontal, vertical);
+        }
     }
 
     protected override void AttempMove<T>(int xDir, int yDir)
@@ -102,7 +105,10 @@ public class Player : MovingObject
     private void CheckIfGameOver()
     {
         if (food <= 0)
+        {
+            Debug.Log("Game over");
             GameManager.instance.GameOver();
+        }
     }
 
 

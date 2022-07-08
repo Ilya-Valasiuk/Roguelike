@@ -10,6 +10,7 @@ public abstract class MovingObject : MonoBehaviour
     private BoxCollider2D boxCollider;
     private Rigidbody2D rb2D;
     private float inverseMoveTime;
+    private bool isMoving;
 
     protected virtual void Start()
     {
@@ -30,7 +31,7 @@ public abstract class MovingObject : MonoBehaviour
 
         boxCollider.enabled = true;
 
-        if (hit.transform == null)
+        if (hit.transform == null && !isMoving)
         {
             StartCoroutine(SmoothMovement(end));
             return true;
@@ -41,11 +42,13 @@ public abstract class MovingObject : MonoBehaviour
 
     protected IEnumerator SmoothMovement(Vector3 end)
     {
+        isMoving = true;
+
         float sqlRemainingDistance = (transform.position - end).sqrMagnitude;
 
         while (sqlRemainingDistance > float.Epsilon)
         {
-            Vector3 newPosition = Vector3.MoveTowards(rb2D.position, end, inverseMoveTime * Time.deltaTime);
+            Vector3 newPosition = Vector3.MoveTowards(rb2D.position, end, inverseMoveTime);
 
             rb2D.MovePosition(newPosition);
 
@@ -53,6 +56,12 @@ public abstract class MovingObject : MonoBehaviour
 
             yield return null;
         }
+
+        //Make sure the object is exactly at the end of its movement.
+        rb2D.MovePosition(end);
+
+        //The object is no longer moving.
+        isMoving = false;
     }
 
     protected virtual void AttempMove<T>(int xDir, int yDir)
