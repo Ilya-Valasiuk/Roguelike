@@ -1,19 +1,24 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
+    public float levelStartDelay = 2f;
     public float turnDelay = 0.1f;
     public static GameManager instance = null;
     BoardManager boardScript;
     public int playerFoodPoints = 100;
     [HideInInspector] public bool playersTurn = true;
 
-    private int level = 5;
+    private Text levelText;
+    private GameObject levelImage;
+    private int level = 1;
     private List<Enemy> enemies;
     private bool enemiesMoving;
+    private bool doingSetup;
 
     private void Awake()
     {
@@ -27,15 +32,21 @@ public class GameManager : MonoBehaviour
         enemies = new List<Enemy>();
 
         boardScript = GetComponent<BoardManager>();
+
+        Application.targetFrameRate = 60;
+
+        Debug.Log("Applicateion targetFrameRate: " + Application.targetFrameRate);
     }
+
 
     private void onGameFinishedLoading(Scene scene, LoadSceneMode mode)
     {
-        level++;
 
         Debug.Log("Scene loaded. Level started: " + level);
 
         InitGame();
+
+        level++;
     }
 
     private void OnEnable()
@@ -50,7 +61,7 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
-        if (playersTurn || enemiesMoving)
+        if (playersTurn || enemiesMoving || doingSetup)
         {
             return;
         }
@@ -65,12 +76,29 @@ public class GameManager : MonoBehaviour
 
     void InitGame()
     {
+        doingSetup = true;
+
+        levelImage = GameObject.Find("LevelImage");
+        levelText = GameObject.Find("LevelText").GetComponent<Text>();
+        levelText.text = "Day " + level;
+        levelImage.SetActive(true);
+
+        Invoke("HideLevelImage", levelStartDelay);
+
         enemies.Clear();
         boardScript.SetupScene(level);
     }
 
+    private void HideLevelImage()
+    {
+        levelImage.SetActive(false);
+        doingSetup = false;
+    }
+
     public void GameOver()
     {
+        levelText.text = "After " + level + " days, tou starved.";
+        levelImage.SetActive(true);
         enabled = false;
     }
 

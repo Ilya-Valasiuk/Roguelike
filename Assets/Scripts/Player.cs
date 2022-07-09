@@ -1,6 +1,5 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
 public class Player : MovingObject
@@ -9,6 +8,15 @@ public class Player : MovingObject
     public int pointsPerFood = 10;
     public int poinstPerSoda = 20;
     public float restartLevelDelay = 1f;
+    public Text foodText;
+
+    public AudioClip moveSound1;
+    public AudioClip moveSound2;
+    public AudioClip eatSound1;
+    public AudioClip eatSound2;
+    public AudioClip drinkSound1;
+    public AudioClip drinkSound2;
+    public AudioClip gameOver;
 
     private Animator animator;
     private int food;
@@ -18,6 +26,8 @@ public class Player : MovingObject
         animator = GetComponent<Animator>();
 
         food = GameManager.instance.playerFoodPoints;
+
+        foodText.text = "Food: " + food;
 
         base.Start();
     }
@@ -42,7 +52,6 @@ public class Player : MovingObject
 
         if (horizontal != 0 || vertical != 0)
         {
-            Debug.Log("Attemp to move ith H=" + horizontal + " V=" + vertical);
             AttempMove<Wall>(horizontal, vertical);
         }
     }
@@ -50,13 +59,14 @@ public class Player : MovingObject
     protected override void AttempMove<T>(int xDir, int yDir)
     {
         food--;
+        foodText.text = "Food: " + food;
 
         base.AttempMove<T>(xDir, yDir);
         RaycastHit2D hit;
 
         if (Move(xDir, yDir, out hit))
         {
-            //Call RandomizeSfx of SoundManager to play the move sound, passing in two audio clips to choose from.
+            SoundManager.instance.RandomizeSfx(moveSound1, moveSound2);
         }
 
         CheckIfGameOver();
@@ -74,11 +84,15 @@ public class Player : MovingObject
         else if (collision.tag == "Food")
         {
             food += pointsPerFood;
+            foodText.text = "+" + pointsPerFood + "Food: " + food;
+            SoundManager.instance.RandomizeSfx(eatSound1, eatSound2);
             collision.gameObject.SetActive(false);
         }
         else if (collision.tag == "Soda")
         {
             food += poinstPerSoda;
+            foodText.text = "+" + poinstPerSoda + "Food: " + food;
+            SoundManager.instance.RandomizeSfx(drinkSound1, drinkSound2);
             collision.gameObject.SetActive(false);
         }
     }
@@ -99,6 +113,7 @@ public class Player : MovingObject
     {
         animator.SetTrigger("playerHit");
         food -= loss;
+        foodText.text = "-" + loss + "Food: " + food;
         CheckIfGameOver();
     }
 
@@ -107,6 +122,8 @@ public class Player : MovingObject
         if (food <= 0)
         {
             Debug.Log("Game over");
+            SoundManager.instance.audioSource.Stop();
+            SoundManager.instance.PlaySingle(gameOver);
             GameManager.instance.GameOver();
         }
     }
